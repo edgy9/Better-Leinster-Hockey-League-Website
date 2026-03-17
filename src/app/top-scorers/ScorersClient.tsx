@@ -3,6 +3,14 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { Scorer } from "@/lib/topscorers";
 
+// ── Analytics helper ────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const track = (event: string, data?: Record<string, unknown>) => {
+  if (typeof window !== "undefined" && (window as any).umami) {
+    (window as any).umami.track(event, data);
+  }
+};
+
 // ── Section config ─────────────────────────────────────────────────────────────
 const SECTIONS = [
   { label: "All",          key: null          },
@@ -120,9 +128,22 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
     localStorage.setItem("lha-theme", next);
     document.documentElement.setAttribute("data-theme", next);
   }, [theme]);
+
+  // ── Time on page ───────────────────────────────────────────────────────────
+  const pageOpenAt = useRef(Date.now());
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    const sendDuration = () => {
+      const seconds = Math.round((Date.now() - pageOpenAt.current) / 1000);
+      track("time_on_page", { seconds });
+    };
+    const onVisibility = () => { if (document.visibilityState === "hidden") sendDuration(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("beforeunload", sendDuration);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("beforeunload", sendDuration);
+    };
+  }, []);
 
   // Filter state — cascade: section → club → competition
   const [section, setSection] = useState<SectionKey>(null);
@@ -130,6 +151,7 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
   const [comp,    setComp]    = useState<string | null>(null);
   const [search,  setSearch]  = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
+  const searchStartedRef = useRef(false);
 
   // ── Derived filter options ─────────────────────────────────────────────────
   const clubs = useMemo(() => {
@@ -155,11 +177,21 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
     setSection(key);
     setClub(null);
     setComp(null);
+    const label = SECTIONS.find((f) => f.key === key)?.label ?? "All";
+    track("section_selected", { section: label });
   }, []);
 
   const pickClub = useCallback((c: string | null) => {
     setClub(c);
     setComp(null);
+    if (c) track("club_selected", { club: c });
+    else   track("club_cleared");
+  }, []);
+
+  const pickComp = useCallback((c: string | null) => {
+    setComp(c);
+    if (c) track("competition_selected", { competition: c });
+    else   track("competition_cleared");
   }, []);
 
   // ── Displayed rows ─────────────────────────────────────────────────────────
@@ -195,6 +227,28 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
     }
     return [...map.values()].sort((a, b) => b.score - a.score);
   }, [data, section, club, comp, search]);
+
+  // ── Debounced search tracking ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!search) return;
+    const id = setTimeout(() => {
+      track("search_query", { query: search });
+    }, 200);
+    return () => clearTimeout(id);
+  }, [search]);
+
+  // ── Track player lookup (search resolves to results) ──────────────────────
+  useEffect(() => {
+    if (!search || displayed.length === 0) return;
+    const id = setTimeout(() => {
+      track("player_lookup", {
+        query: search,
+        top_result: displayed[0].player,
+        results_count: displayed.length,
+      });
+    }, 800);
+    return () => clearTimeout(id);
+  }, [search, displayed]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -246,8 +300,8 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
           label="Competition"
           items={competitions}
           selected={comp}
-          onSelect={setComp}
-          onClear={() => setComp(null)}
+          onSelect={pickComp}
+          onClear={() => pickComp(null)}
         />
 
         <div className="divider" />
@@ -271,13 +325,19 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
               placeholder="Search by name…"
               autoComplete="off"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                if (!searchStartedRef.current && e.target.value) {
+                  searchStartedRef.current = true;
+                  track("search_started");
+                }
+                setSearch(e.target.value);
+              }}
             />
             {search && (
               <button
                 className="search-clear"
                 style={{ right: "0.75rem" }}
-                onClick={() => { setSearch(""); searchRef.current?.focus(); }}
+                onClick={() => { setSearch(""); searchStartedRef.current = false; searchRef.current?.focus(); track("search_cleared"); }}
               >
                 ✕
               </button>

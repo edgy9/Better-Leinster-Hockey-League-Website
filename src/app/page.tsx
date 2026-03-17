@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { SEASONS, SECTION_CONFIG, RESULT_TITLES } from "@/lib/config";
 import type { Season, WhoOption } from "@/lib/config";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@/lib/api";
 import type { CompItem } from "@/lib/api";
 import { getFilters, applyFilter } from "@/lib/filters";
+import AddToHomeScreen from "@/components/AddToHomeScreen";
 
 const CURRENT_SEASON: Season = SEASONS.find((s) => s.current)!;
 // Prefetch LHA league pages when the visible list is at or below this size
@@ -66,9 +68,6 @@ export default function Home() {
     localStorage.setItem("lha-theme", next);
     document.documentElement.setAttribute("data-theme", next);
   };
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
 
   // Selection state
   const [section, setSection] = useState<string | null>(null);
@@ -245,14 +244,15 @@ export default function Home() {
         </h1>
         <div className="header-row">
           <nav className="header-nav">
-            <a href="https://www.leinsterhockey.ie/fixtures" target="_blank" rel="noreferrer">
+            {/*<a href="https://www.leinsterhockey.ie/fixtures" target="_blank" rel="noreferrer">
               Fixtures ↗
             </a>
             <a href="https://www.leinsterhockey.ie/results" target="_blank" rel="noreferrer">
               Results ↗
-            </a>
-            <a href="/top-scorers">Top Scorers</a>
+            </a>*/}
+            <Link href="/top-scorers" prefetch>Top Goal Scorers ↗</Link>
           </nav>
+          <AddToHomeScreen />
           <button className="theme-btn" onClick={toggleTheme}>☀ / ☾</button>
         </div>
       </header>
