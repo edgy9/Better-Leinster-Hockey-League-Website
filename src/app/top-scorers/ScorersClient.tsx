@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import type { Scorer } from "@/lib/topscorers";
+import AddToHomeScreen from "@/components/AddToHomeScreen";
 
 // ── Analytics helper ────────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -262,6 +263,7 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
         <div className="header-row">
           <nav className="header-nav">
             <a href="/">← Competitions</a>
+            <AddToHomeScreen />
           </nav>
           <button className="theme-btn" onClick={toggleTheme}>☀ / ☾</button>
         </div>
