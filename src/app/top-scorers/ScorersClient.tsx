@@ -381,7 +381,7 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
                         </>
                       )}
                     </div>
-                    <div className="scorer-goals">{s.score}</div>
+                    <div className="scorer-goals">{s.score} goal{s.score !== 1 ? "s" : ""}</div>
                   </div>
                 );
               })}
