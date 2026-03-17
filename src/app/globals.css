@@ -446,6 +446,48 @@ main {
 }
 .reset-btn:hover { color: var(--ink); }
 
+/* ── SITE FOOTER ── */
+.site-footer {
+  margin-top: 3rem;
+  padding-bottom: 2rem;
+  text-align: center;
+}
+.site-footer a {
+  font-size: 0.65rem;
+  color: var(--muted2);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  transition: color 0.12s;
+}
+.site-footer a:hover { color: var(--muted); }
+
+/* ── ABOUT PAGE ── */
+.about-main {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.about-shrug {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+.about-line {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.about-line a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.12s;
+}
+.about-line a:hover { color: var(--ink); }
+
 /* Breadcrumb */
 .breadcrumb {
   display: flex;

@@ -285,7 +285,12 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
           </div>
 
           {displayed.length === 0 && (
-            <div className="empty-block">No scorers found.</div>
+            <div className="empty-block">
+              No scorers found.<br />
+              <span style={{ display: "block", marginTop: "0.6rem", fontSize: "0.75rem", lineHeight: 1.6 }}>
+                Only Leinster Hockey competitions are included. If your name isn&apos;t here, you haven&apos;t been recorded as a goal scorer on any match cards.
+              </span>
+            </div>
           )}
 
           {displayed.length > 0 && (
@@ -320,6 +325,9 @@ export default function ScorersClient({ data }: { data: Scorer[] }) {
               })}
             </div>
           )}
+        </div>
+        <div className="site-footer">
+          <a href="/about">about</a>
         </div>
       </main>
     </>

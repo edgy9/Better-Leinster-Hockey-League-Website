@@ -481,6 +481,9 @@ export default function Home() {
             </button>
           </div>
         )}
+        <div className="site-footer">
+          <a href="/about">about</a>
+        </div>
       </main>
     </>
   );
